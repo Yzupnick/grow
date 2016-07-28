@@ -9,6 +9,16 @@ class Url(object):
         self.port = 80 if port is None else port
         self.scheme = 'http' if scheme is None else scheme
 
+    def __cmp__(self, obj):
+        self_str = str(self)
+        obj_str = str(obj)
+        if self_str < obj_str:
+            return -1
+        if self_str == obj_str:
+            return 0
+        if self_str > obj_str:
+            return 1
+
     def __str__(self):
         url = '{}://{}'.format(self.scheme, self.host)
         if self.port != 80:
@@ -39,7 +49,7 @@ class Url(object):
             return path
         result = os.path.relpath(path, relative_to)
         if path.endswith('/'):
-          result = result + '/'
+            result = result + '/'
         if not result.startswith(('/', '.')):
-          return './' + result
+            return './' + result
         return result

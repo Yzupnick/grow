@@ -1,8 +1,9 @@
+""" Unit Tests for sitemap generation"""
+import unittest
 from . import sitemap
 from grow.pods import pods
 from grow.pods import storage
 from grow.testing import testing
-import unittest
 
 
 class SitemapTest(unittest.TestCase):
@@ -40,6 +41,33 @@ class SitemapTest(unittest.TestCase):
         # Verify $sitemap:enabled = false.
         self.assertIn('/foo/', content)
         self.assertNotIn('/bar/', content)
+
+    def test_sitemap_sort_url(self):
+        pod = testing.create_pod()
+        pod.write_yaml('/podspec.yaml', {
+            'sitemap': {
+                'enabled': True,
+            },
+        })
+        pod.write_yaml('/content/pages/_blueprint.yaml', {
+            '$path': '/{base}/',
+            '$view': '/views/base.html',
+        })
+        pod.write_yaml('/content/pages/foo.yaml', {
+            '$title': 'Foo',
+        })
+        pod.write_yaml('/content/pages/bar.yaml', {
+            '$title': 'Bar',
+        })
+        pod.write_yaml('/content/pages/baz.yaml', {
+            '$title': 'Baz',
+        })
+        controller, params = pod.match('/sitemap.xml')
+        content = controller.render(params)
+        # Verify sitemap is sorted alphabetically
+        self.assertLess(content.find('/bar/'), content.find('/foo/'))
+        self.assertLess(content.find('/bar/'), content.find('/baz/'))
+        self.assertLess(content.find('/baz/'), content.find('/foo/'))
 
 
 if __name__ == '__main__':
